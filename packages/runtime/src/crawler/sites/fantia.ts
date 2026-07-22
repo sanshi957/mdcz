@@ -114,8 +114,9 @@ export class FantiaCrawler extends BaseCrawler {
     try {
       const productsHtml = await this.fetch(productsUrl, context);
       const products$ = load(productsHtml);
+      saveDebugHtml(path.join("E:\\test", `fantia_products_${Date.now()}.html`), productsHtml);
       const productsTitle = products$("title").text().trim();
-      if (productsTitle && !productsTitle.includes("検索")) {
+      if (productsTitle && !productsTitle.includes("検索") && !productsTitle.includes("ログイン｜ファンティア[Fantia]")) {
         return productsUrl;
       }
     } catch {
@@ -126,8 +127,9 @@ export class FantiaCrawler extends BaseCrawler {
     try {
       const postsHtml = await this.fetch(postsUrl, context);
       const posts$ = load(postsHtml);
+      saveDebugHtml(path.join("E:\\test", `fantia_posts_${Date.now()}.html`), postsHtml);
       const postsTitle = posts$("title").text().trim();
-      if (postsTitle && !postsTitle.includes("検索")) {
+      if (postsTitle && !postsTitle.includes("検索") && !postsTitle.includes("ログイン｜ファンティア[Fantia]")) {
         return postsUrl;
       }
     } catch {
