@@ -23,10 +23,6 @@ const FANTIA_SITE_REQUEST_CONFIGS: readonly SiteRequestConfig[] = [
   },
 ];
 
-// const FANTIA_PREFIX_REGEX = /fantia[-_]([0-9]{3,8})/i;
-// const regex = /^[a-z]{2,6}[-_][0-9]{3,7}$/i;
-const FANTIA_PREFIX_REGEX = /fantia[-_]([0-9]{3,8})/i;
-
 const isAgeVerificationPage = ($: CheerioAPI): boolean => {
   const ageConfirmTitle = $(".list-group-item-title").first().text().trim();
   if (ageConfirmTitle.includes("あなたは18歳以上ですか？")) {
@@ -114,7 +110,31 @@ export class FantiaCrawler extends BaseCrawler {
       return null;
     }
 
-    return `${FANTIA_BASE_URL}/products?brand_type=0&category=&keyword=${number}`;
+    const productsUrl = `${FANTIA_BASE_URL}/products/${number}`;
+    try {
+      const productsHtml = await this.fetch(productsUrl, context);
+      const products$ = load(productsHtml);
+      const productsTitle = products$("title").text().trim();
+      if (productsTitle && !productsTitle.includes("検索")) {
+        return productsUrl;
+      }
+    } catch {
+      this.logger.debug(`Failed to fetch products page for number: ${number}`);
+    }
+
+    const postsUrl = `${FANTIA_BASE_URL}/posts/${number}`;
+    try {
+      const postsHtml = await this.fetch(postsUrl, context);
+      const posts$ = load(postsHtml);
+      const postsTitle = posts$("title").text().trim();
+      if (postsTitle && !postsTitle.includes("検索")) {
+        return postsUrl;
+      }
+    } catch {
+      this.logger.debug(`Failed to fetch posts page for number: ${number}`);
+    }
+
+    return null;
   }
 
   protected async parseSearchPage(
@@ -127,47 +147,12 @@ export class FantiaCrawler extends BaseCrawler {
       throw new Error("Fantia age verification detected; please login first via browser and provide cookies");
     }
 
-    const resultProducts = $(".col-xs-4.col-sm-4.col-md-3.col-lg-2.mb-20.mb-10-xs");
-    if (resultProducts.length > 0) {
-      const detailUrl = `${FANTIA_BASE_URL}${resultProducts.find("a").attr("href")}`;
-      return detailUrl;
-    }
-
-    if (context.number.match(FANTIA_PREFIX_REGEX)) {
-      const productsUrl = `${FANTIA_BASE_URL}/products/${normalizeNumber(context.number)}`;
-      const productsHtml = await this.gateway.fetchHtml(productsUrl, context.options);
-      const products$ = load(productsHtml);
-      const productsTitle = products$("title");
-      if (productsTitle && !productsTitle.text().includes("検索")) {
-        return productsUrl;
-      }
-
-      const postsUrl = `${FANTIA_BASE_URL}/posts/${normalizeNumber(context.number)}`;
-      const postsHtml = await this.gateway.fetchHtml(postsUrl, context.options);
-      const posts$ = load(postsHtml);
-      const postsTitle = posts$("title");
-      if (postsTitle && !postsTitle.text().includes("検索")) {
-        return postsUrl;
-      }
-    }
-
-    const postsSearchUrl = `${FANTIA_BASE_URL}/posts?brand_type=0&category=&keyword=${normalizeNumber(context.number)}`;
-    const postsSearchHtml = await this.gateway.fetchHtml(postsSearchUrl, context.options);
-    const postsSearch$ = load(postsSearchHtml);
-
-    const resultPosts = postsSearch$(".col-xs-4.col-sm-4.col-md-3.col-lg-2.mb-20.mb-10-xs");
-    if (resultPosts.length > 0) {
-      const detailUrl = `${FANTIA_BASE_URL}${resultPosts.find("a").attr("href")}`;
-      return detailUrl;
-    }
-
-    this.logger.debug(`unmatch url is ${searchUrl}`);
-    return null;
+    return this.reuseSearchDocument(searchUrl);
   }
 
   protected async parseDetailPage(context: Context, $: CheerioAPI, _detailUrl: string): Promise<CrawlerData | null> {
     this.logger.debug(`url is ${_detailUrl}`);
-    saveDebugHtml(path.join("E:\\test", `fantia_${Date.now()}.html`), $.html());
+    // saveDebugHtml(path.join("E:\\test", `fantia_${Date.now()}.html`), $.html());
     const title = $("title").text().trim();
     if (!title) {
       return null;
