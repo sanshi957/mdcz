@@ -37,6 +37,7 @@ const DEFAULT_SITE_CONNECTIVITY_URLS: Record<Website, string> = {
   [Website.SOKMIL]: "https://www.sokmil.com",
   [Website.AVBASE]: "https://www.avbase.net",
   [Website.AVWIKIDB]: "https://avwikidb.com",
+  [Website.FANTIA]: "https://fantia.jp",
 };
 
 const appendCookie = (headers: Record<string, string>, cookie: string | undefined): void => {

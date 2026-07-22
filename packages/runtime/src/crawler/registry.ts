@@ -20,6 +20,7 @@ import { crawlerRegistration as ppvdatabankRegistration } from "./sites/ppvdatab
 import { crawlerRegistration as prestigeRegistration } from "./sites/prestige";
 import { crawlerRegistration as r18Registration } from "./sites/r18";
 import { crawlerRegistration as sokmilRegistration } from "./sites/sokmil";
+import { crawlerRegistration as fantiaRegistration } from "./sites/fantia";
 
 const crawlerConstructors = new Map<Website, CrawlerConstructor>();
 
@@ -63,6 +64,7 @@ const crawlerRegistrations: CrawlerRegistration[] = [
   prestigeRegistration,
   r18Registration,
   sokmilRegistration,
+  fantiaRegistration,
 ];
 
 for (const registration of crawlerRegistrations) {
