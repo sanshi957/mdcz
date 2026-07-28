@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [workspace]
     paths:
       - "apps/**"
       - "packages/**"
@@ -18,7 +18,7 @@ on:
       - "playwright.config.ts"
       - "tsconfig*.json"
   pull_request:
-    branches: [main]
+    branches: [workspace]
 
 jobs:
   static:
